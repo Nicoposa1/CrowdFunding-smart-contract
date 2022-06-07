@@ -2,47 +2,43 @@
 pragma solidity ^0.8.0;
 
 contract fundingProject {
-  string public id;
-  string public name;
-  string public description;
-  address payable public author;
-  uint public fundingGoal;
-  uint public fundingRaised;
-  string public status = "Open";
+    string public id;
+    string public name;
+    string public description;
+    string public status = "Open";
+    address payable public author;
+    uint256 public fundingGoal;
+    uint256 public fundingRaised;
 
+    constructor(
+        string memory _id,
+        string memory _name,
+        string memory _description,
+        uint256 _fundingGoal
+    ) {
+        id = _id;
+        name = _name;
+        description = _description;
+        fundingGoal = _fundingGoal;
+        author = payable(msg.sender);
+    }
 
-  constructor(string memory _id, string memory _name, string memory _description, uint _fundingGoal)  { 
-    id = _id;
-    name = _name;
-    description = _description;
-    author = payable(msg.sender);
-    fundingGoal = _fundingGoal;
-  }
+    modifier onlyAuthor() {
+        require(author == msg.sender, "Only author can do this");
+        _;
+    }
 
-  modifier onlyOwner() {
-    require(
-      msg.sender == author,
-      "Only owner can do this"
-    );
-    _;
-  }
+    modifier authorNotDo() {
+        require(author != msg.sender, "The author can't fund this project");
+        _;
+    }
 
-  modifier ownerNotdo(){
-    require(
-      msg.sender != author,
-      "The author can't do this"
-    );
-    _;
-  }
+    function fundProject() public payable {
+        author.transfer(msg.value);
+        fundingRaised += msg.value;
+    }
 
-  function fundProject() payable public ownerNotdo {
-    author.transfer(msg.value);
-    fundingRaised += msg.value;
-  }
-
-  function changeStatus(string calldata newStatus) public onlyOwner {
-    status = newStatus;
-  }
-
+    function changeStatus(string calldata newStatus) public {
+        status = newStatus;
+    }
 }
-
