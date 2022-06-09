@@ -1,1 +1,2 @@
-Contract in ether scan: https://rinkeby.etherscan.io/tx/0xb6d8a3570b425b46438de0478ec3e4e2bf35c5bb577293c8ceb14a5b76b9fd39
+
+Smart Contract in ether scan: https://rinkeby.etherscan.io/address/0xd6a67b306cbdf9ab66fb0d381b440c312cfa3f2e
