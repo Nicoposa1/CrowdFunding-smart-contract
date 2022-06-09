@@ -1,70 +1,71 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-contract fundingProject {
-    string public id;
-    string public name;
-    string public description;
-    string public stateIs = "Open";
-    uint256 public state = 0;
-    address payable public author;
-    uint256 public fundingGoal;
-    uint256 public fundingRaised;
+contract fundintProject {
+  struct Project {
+    string id;
+    string name;
+    string description;
+    uint fundingGoal;
+    address payable author;
+    string stateIs;
+    uint state;
+    uint fundingRaised;
+  }
 
-    constructor(
-        string memory _id,
-        string memory _name,
-        string memory _description,
-        uint256 _fundingGoal
-    ) {
-        id = _id;
-        name = _name;
-        description = _description;
-        fundingGoal = _fundingGoal;
-        author = payable(msg.sender);
-    }
+  Project public project;
 
-    event FundProject(string id, address sender, uint256 amount);
+  constructor(string memory _id, string memory _name, string memory _description, uint _fundingGoal){
+    project = Project(_id, _name, _description, _fundingGoal, payable(msg.sender), "Open", 0, 0 );
+  }
 
-    event ChangeState(
-        string id,
-        address changer,
-        string stateIs,
-        uint256 state
+  event ChangeState(
+    string id,
+    address changer,
+    uint state,
+    string stateIs
+  );
+
+  event FundProject (
+    string id,
+    address sender,
+    uint amount
+  );
+
+  modifier isNotAuthor {
+    require(
+      project.author == msg.sender,
+      "The author can't fund the project"
     );
+    _;
+  }
 
-    modifier isNotAuthor() {
-        require(author != msg.sender, "The author can't fund your own project");
-        _;
-    }
+  modifier isAuthor {
+    require(
+      project.author != msg.sender,
+      "Only author can change the state"
+    );
+    _;
+  }
 
-    modifier isAuthor() {
-        require(author == msg.sender, "Only author can do this");
-        _;
-    }
+  function fundProject() payable public isNotAuthor {
+    project.author.transfer(msg.value);
+    project.fundingRaised += msg.value;
+    emit FundProject(project.id, msg.sender, msg.value);
+  }
 
-    function fundProject() public payable isNotAuthor {
-        require(state == 0, "The project is closed");
-        require(msg.value > 0, "You need to aport more than 0");
-        author.transfer(msg.value);
-        fundingRaised += msg.value;
-        emit FundProject(id, msg.sender, msg.value);
+  function changeState(uint newState) public isAuthor {
+    require(newState == 0 || newState == 1, "The state must be 0 or 1");
+    require(newState != project.state, "The project is already in this state");
+    if(newState == 0) {
+      project.state = newState;
+      project.stateIs = "Open";
+    emit ChangeState(project.id, msg.sender, newState, project.stateIs);
+    }else if(newState == 1) {
+      project.state = newState;
+      project.stateIs = "Closed";
+      emit ChangeState(project.id, msg.sender, newState, project.stateIs);
     }
+  }
 
-    function changeState(uint256 newState) public isAuthor {
-        require(
-            newState == 0 || newState == 1,
-            "The project is not defined, only acept 0 and 1"
-        );
-        require(newState != state, "The state is declared with the same state");
-        if (newState == 0) {
-            state = newState;
-            stateIs = "Open";
-            emit ChangeState(id, msg.sender, stateIs, state);
-        } else if (newState == 1) {
-            state = newState;
-            stateIs = "Closed";
-            emit ChangeState(id, msg.sender, stateIs, state);
-        }
-    }
 }
